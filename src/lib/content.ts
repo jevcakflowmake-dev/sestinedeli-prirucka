@@ -137,3 +137,4 @@ export const FAQ_ITEMS: FaqItem[] = [
 ]
 
 export const PAYMENT_URL = process.env.NEXT_PUBLIC_PAYMENT_URL ?? '#'
+export const PDF_PREVIEW_URL = '/sestinedeli-s-klidem.pdf'

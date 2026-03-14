@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import SectionWrapper from '@/components/shared/SectionWrapper'
 import SectionHeading from '@/components/shared/SectionHeading'
 import AnimatedSection from '@/components/shared/AnimatedSection'
+import { PDF_PREVIEW_URL } from '@/lib/content'
 
 const PREVIEW_PAGES = [
   {
@@ -82,6 +83,18 @@ export default function PreviewSection() {
         <p className="mt-12 text-center text-sm text-warm-900/50">
           + checklisty, tabulky a rychlé přehledy v každé kapitole
         </p>
+        <div className="mt-6 flex justify-center">
+          <motion.a
+            href={PDF_PREVIEW_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-sage-400 px-6 py-2.5 text-sm font-semibold text-sage-500 transition-colors hover:bg-sage-100"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            📄 Zobrazit ukázku PDF
+          </motion.a>
+        </div>
       </AnimatedSection>
     </SectionWrapper>
   )

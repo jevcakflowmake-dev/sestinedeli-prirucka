@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
 Generátor PDF příručky "Šestinedělí s klidem"
-Verze 2: opravená interpunkce + vektorové ilustrace
+Verze 3: TTF fonty (česká diakritika) + profesionální ilustrace
 """
 import math
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.lib.colors import HexColor, white, black, Color
@@ -37,6 +39,13 @@ AMBER_300 = HexColor('#FCD34D')
 WARM_900  = HexColor('#3D3530')
 WARM_600  = HexColor('#6B5E58')
 WARM_400  = HexColor('#9C8880')
+
+# ── FONTY (TTF s podporou české diakritiky) ──────────────────────────────────
+_FONT_DIR = '/System/Library/Fonts/Supplemental'
+pdfmetrics.registerFont(TTFont('ArialUnicode', f'{_FONT_DIR}/Arial Unicode.ttf'))
+pdfmetrics.registerFont(TTFont('ArialBold', f'{_FONT_DIR}/Arial Bold.ttf'))
+pdfmetrics.registerFont(TTFont('Georgia', f'{_FONT_DIR}/Georgia.ttf'))
+pdfmetrics.registerFont(TTFont('GeorgiaItalic', f'{_FONT_DIR}/Georgia Italic.ttf'))
 
 PAGE_W, PAGE_H = A4
 
@@ -143,7 +152,7 @@ def _illus_sleep(c, w, h):
         _draw_star(c, cx + dx, cy + dy, 4, AMBER_300, HexColor('#F59E0B'))
     # ZZZ text
     for i, (zx, zy, fs) in enumerate([(cx + 30, cy - 20, 16), (cx + 38, cy - 6, 11), (cx + 44, cy + 6, 8)]):
-        c.setFont("Helvetica-Bold", fs)
+        c.setFont("ArialBold", fs)
         c.setFillColor(WARM_400)
         c.setFillAlpha(0.6 - i * 0.15)
         c.drawString(zx, zy, "z")
@@ -415,7 +424,7 @@ def _illus_visitors(c, w, h):
     c.setLineWidth(1)
     c.circle(cx + 32, cy + 35, 12, fill=1, stroke=1)
     c.setFillColor(white)
-    c.setFont("Helvetica-Bold", 8)
+    c.setFont("ArialBold", 8)
     c.drawCentredString(cx + 32, cy + 32, "NE")
 
 
@@ -526,7 +535,7 @@ def _illus_doctor(c, w, h):
 def get_styles():
     chapter_title = ParagraphStyle(
         'ChapterTitle',
-        fontName='Helvetica-Bold',
+        fontName='ArialBold',
         fontSize=24,
         textColor=WARM_900,
         leading=30,
@@ -535,7 +544,7 @@ def get_styles():
     )
     chapter_subtitle = ParagraphStyle(
         'ChapterSubtitle',
-        fontName='Helvetica-Oblique',
+        fontName='GeorgiaItalic',
         fontSize=12,
         textColor=BLUSH_500,
         leading=16,
@@ -543,7 +552,7 @@ def get_styles():
     )
     chapter_label = ParagraphStyle(
         'ChapterLabel',
-        fontName='Helvetica',
+        fontName='ArialUnicode',
         fontSize=10,
         textColor=WARM_400,
         leading=14,
@@ -551,7 +560,7 @@ def get_styles():
     )
     section_heading = ParagraphStyle(
         'SectionHeading',
-        fontName='Helvetica-Bold',
+        fontName='ArialBold',
         fontSize=12,
         textColor=WARM_900,
         leading=16,
@@ -560,7 +569,7 @@ def get_styles():
     )
     body = ParagraphStyle(
         'BodyText',
-        fontName='Helvetica',
+        fontName='ArialUnicode',
         fontSize=10,
         textColor=WARM_600,
         leading=15,
@@ -569,7 +578,7 @@ def get_styles():
     )
     bullet = ParagraphStyle(
         'BulletItem',
-        fontName='Helvetica',
+        fontName='ArialUnicode',
         fontSize=10,
         textColor=WARM_600,
         leading=15,
@@ -579,7 +588,7 @@ def get_styles():
     )
     toc_ch = ParagraphStyle(
         'TOCChapter',
-        fontName='Helvetica-Bold',
+        fontName='ArialBold',
         fontSize=11,
         textColor=WARM_900,
         leading=16,
@@ -587,7 +596,7 @@ def get_styles():
     )
     toc_sub = ParagraphStyle(
         'TOCSub',
-        fontName='Helvetica-Oblique',
+        fontName='GeorgiaItalic',
         fontSize=9,
         textColor=WARM_400,
         leading=13,
@@ -596,7 +605,7 @@ def get_styles():
     )
     intro = ParagraphStyle(
         'Intro',
-        fontName='Helvetica',
+        fontName='ArialUnicode',
         fontSize=10.5,
         textColor=WARM_600,
         leading=16,
@@ -944,17 +953,17 @@ def build_pdf(output_path: str):
         # Ilustrace na titulní straně
         draw_illustration(c, 1, w * 0.55, h * 0.52, 180, 160)
         # Texty
-        c.setFont("Helvetica-Bold", 52)
+        c.setFont("ArialBold", 52)
         c.setFillColor(white)
         c.drawCentredString(w * 0.38, h * 0.76, "Šestinedělí")
-        c.setFont("Helvetica-Bold", 46)
+        c.setFont("ArialBold", 46)
         c.drawCentredString(w * 0.38, h * 0.66, "s klidem")
-        c.setFont("Helvetica-Oblique", 14)
+        c.setFont("GeorgiaItalic", 14)
         c.setFillColor(HexColor('#FDE8E8'))
         c.drawCentredString(w * 0.38, h * 0.56, "Kompletní příručka pro nové maminky")
         c.drawCentredString(w * 0.38, h * 0.52, "od porodu po 6. týden")
         # Dole
-        c.setFont("Helvetica", 10)
+        c.setFont("ArialUnicode", 10)
         c.setFillColor(WARM_600)
         c.drawCentredString(w / 2, h * 0.09, "11 kapitol  \u00b7  Sepsáno s porodní asistentkou  \u00b7  85 stran")
         c.restoreState()
@@ -966,10 +975,10 @@ def build_pdf(output_path: str):
             c.setStrokeColor(BLUSH_200)
             c.setLineWidth(0.5)
             c.line(2 * cm, 1.9 * cm, w - 2 * cm, 1.9 * cm)
-            c.setFont("Helvetica", 8)
+            c.setFont("ArialUnicode", 8)
             c.setFillColor(WARM_400)
             c.drawCentredString(w / 2, 1.3 * cm, f"\u2014 {doc.page} \u2014")
-            c.setFont("Helvetica-Oblique", 7.5)
+            c.setFont("GeorgiaItalic", 7.5)
             c.setFillColor(WARM_400)
             c.drawString(2 * cm, 1.3 * cm, "Šestinedělí s klidem")
             if chapter_title:
@@ -1077,7 +1086,7 @@ def build_pdf(output_path: str):
             Paragraph(
                 f"Rychlý přehled kapitoly: "
                 + ", ".join(s[0] for s in ch['sections']) + ".",
-                ParagraphStyle('Tip', fontName='Helvetica', fontSize=9,
+                ParagraphStyle('Tip', fontName='ArialUnicode', fontSize=9,
                                textColor=WARM_600, leading=13)
             )
         ]]
@@ -1110,7 +1119,7 @@ def build_pdf(output_path: str):
             "ahoj@sestinedeli-prirucka.cz<br/>"
             "sestinedeli-prirucka.vercel.app<br/>"
             "14denní záruka vrácení peněz bez otázek.</font>",
-            ParagraphStyle('Contact', fontName='Helvetica-Bold', fontSize=11,
+            ParagraphStyle('Contact', fontName='ArialBold', fontSize=11,
                            textColor=WARM_900, leading=18)
         )
     ]]
@@ -1134,15 +1143,70 @@ def build_pdf(output_path: str):
 
 
 def _add_illustration_to_drawing(d: Drawing, chapter_num: int, w: float, h: float):
-    """
-    Přidá zjednodušenou ilustraci do Drawing objektu pomocí shapes.
-    """
+    """Profesionální vektorové ilustrace pro každou kapitolu (Canva-styl)."""
     from reportlab.graphics.shapes import (
         Circle, Ellipse, Rect, Line, Path, String, Wedge,
     )
-    from reportlab.lib.colors import HexColor, white
+    from reportlab.lib.colors import HexColor, white, Color
 
     cx, cy = w / 2 + 10, h / 2
+
+    def _circ(x, y, r, fill, stroke=None, sw=0):
+        c = Circle(x, y, r)
+        c.fillColor = fill
+        c.strokeColor = stroke
+        c.strokeWidth = sw
+        d.add(c)
+
+    def _ellip(x1, y1, x2, y2, fill, stroke=None, sw=0):
+        e = Ellipse(x1, y1, x2, y2)
+        e.fillColor = fill
+        e.strokeColor = stroke
+        e.strokeWidth = sw
+        d.add(e)
+
+    def _rect(x, y, w2, h2, fill, stroke=None, sw=0, rx=0):
+        r = Rect(x, y, w2, h2, rx=rx, ry=rx)
+        r.fillColor = fill
+        r.strokeColor = stroke
+        r.strokeWidth = sw
+        d.add(r)
+
+    def _line(x1, y1, x2, y2, stroke, sw=1):
+        ln = Line(x1, y1, x2, y2)
+        ln.strokeColor = stroke
+        ln.strokeWidth = sw
+        d.add(ln)
+
+    def _heart(x, y, s, fill, stroke=None, sw=0):
+        p = _heart_path(x, y, s)
+        p.fillColor = fill
+        p.strokeColor = stroke
+        p.strokeWidth = sw
+        d.add(p)
+
+    def _aura(x, y, radii_alphas, color):
+        """Vrstvy záře (gradient-like efekt)."""
+        for r, a in radii_alphas:
+            c = Circle(x, y, r)
+            c.fillColor = Color(color.red, color.green, color.blue, alpha=a)
+            c.strokeColor = None
+            d.add(c)
+
+    def _sparkle(x, y, r, color):
+        """Hvězdičková tečka."""
+        c = Circle(x, y, r)
+        c.fillColor = color
+        c.strokeColor = None
+        d.add(c)
+
+    def _ring(x, y, r, stroke, sw=1.5):
+        """Kroužek (bez výplně)."""
+        c = Circle(x, y, r)
+        c.fillColor = None
+        c.strokeColor = stroke
+        c.strokeWidth = sw
+        d.add(c)
 
     color_map = {
         1: (BLUSH_300, BLUSH_500, BLUSH_200),
@@ -1160,268 +1224,384 @@ def _add_illustration_to_drawing(d: Drawing, chapter_num: int, w: float, h: floa
     c1, c2, c3 = color_map.get(chapter_num, (BLUSH_200, BLUSH_500, SAGE_200))
 
     if chapter_num == 1:
-        # Soustředné kruhy + srdce
-        for r, alpha_val in [(50, 0.15), (38, 0.25), (26, 0.4)]:
-            circle = Circle(cx, cy, r)
-            circle.fillColor = c1
-            circle.strokeColor = None
-            d.add(circle)
-        heart = _heart_path(cx, cy + 2, 13)
-        heart.fillColor = c2
-        heart.strokeColor = None
-        d.add(heart)
+        # ── Kapitola 1: Tělo po porodu ──────────────────────────────────────
+        # Záře / aura (5 vrstev, gradient-like efekt)
+        _aura(cx, cy, [(58, 0.06), (48, 0.10), (38, 0.16), (28, 0.22), (18, 0.32)], BLUSH_300)
+        # Dekorativní vnější kroužky
+        _ring(cx, cy, 55, BLUSH_200, 1.0)
+        _ring(cx, cy, 42, BLUSH_300, 0.8)
+        # Trup (silueta)
+        _ellip(cx - 16, cy - 30, cx + 16, cy + 12, BLUSH_200, BLUSH_300, 1.2)
+        # Hlava
+        _circ(cx, cy + 22, 13, BLUSH_200, BLUSH_300, 1.0)
+        # Srdce uvnitř
+        _heart(cx, cy - 8, 11, BLUSH_500)
+        # Drobné buňky / tečky
+        for dx, dy, r in [(-26, 2, 3), (26, 5, 3), (-20, -22, 2.5), (22, -18, 2.5),
+                           (0, -38, 2), (-32, -12, 2), (32, -8, 2)]:
+            _circ(cx + dx, cy + dy, r,
+                  Color(BLUSH_300.red, BLUSH_300.green, BLUSH_300.blue, alpha=0.55))
+        # Malý kříž – medicínský symbol
+        _rect(cx + 34, cy + 32, 4, 10, SAGE_400)
+        _rect(cx + 31, cy + 35, 10, 4, SAGE_400)
+        # Dekorativní hvězdičky
+        for sx, sy, sr in [(-42, 38, 2.5), (44, -30, 2), (-38, -30, 2), (40, 35, 2)]:
+            _circ(cx + sx, cy + sy, sr, BLUSH_300)
 
     elif chapter_num == 2:
-        # Velký oblouk + miminko
-        body = Ellipse(cx - 20, cy - 12, cx + 20, cy + 25)
-        body.fillColor = CREAM_200
-        body.strokeColor = c1
-        body.strokeWidth = 1.2
-        d.add(body)
-        head = Circle(cx, cy + 34, 13)
-        head.fillColor = CREAM_200
-        head.strokeColor = c1
-        head.strokeWidth = 1
-        d.add(head)
-        # Kapky
-        for dx, dy in [(-30, 10), (-36, 22), (-28, 32)]:
-            drop = Circle(cx + dx, cy + dy, 3.5)
-            drop.fillColor = white
-            drop.strokeColor = c1
-            drop.strokeWidth = 0.7
-            d.add(drop)
-        heart2 = _heart_path(cx + 24, cy + 36, 6)
-        heart2.fillColor = c2
-        heart2.strokeColor = None
-        d.add(heart2)
+        # ── Kapitola 2: Kojení bez slz ──────────────────────────────────────
+        # Záře na pozadí
+        _aura(cx, cy + 10, [(55, 0.07), (42, 0.12), (30, 0.18)], BLUSH_200)
+        # Velký oblouk – náruč (tři vrstvené elipsy)
+        _ellip(cx - 35, cy - 20, cx + 35, cy + 52, c1, c1, 0)
+        _ellip(cx - 28, cy - 12, cx + 28, cy + 44,
+               Color(BLUSH_100.red, BLUSH_100.green, BLUSH_100.blue, alpha=0.7))
+        # Tělo miminka
+        _ellip(cx - 18, cy - 6, cx + 18, cy + 32, CREAM_200, c1, 1.2)
+        # Dečka / přikrývka
+        _ellip(cx - 20, cy + 20, cx + 20, cy + 38,
+               Color(BLUSH_200.red, BLUSH_200.green, BLUSH_200.blue, alpha=0.8), c1, 0.8)
+        # Hlavička
+        _circ(cx, cy + 38, 13, CREAM_200, c1, 1.0)
+        # Oči miminka
+        _circ(cx - 4, cy + 40, 1.5, HexColor('#3D3530'))
+        _circ(cx + 4, cy + 40, 1.5, HexColor('#3D3530'))
+        # Kapky mléka (5 kapek)
+        for dx, dy, r in [(-38, 18, 4), (-44, 30, 3), (-36, 42, 2.5), (-46, 12, 2), (-30, 50, 2)]:
+            _circ(cx + dx, cy + dy, r, white, c1, 0.7)
+        # Srdíčko + dekorativní hvězdičky
+        _heart(cx + 30, cy + 44, 7, BLUSH_500)
+        for sx, sy in [(42, 0), (-42, 50), (34, -20)]:
+            _circ(cx + sx, cy + sy, 2, BLUSH_300)
 
     elif chapter_num == 3:
-        # Měsíc (srpek)
-        moon1 = Circle(cx - 4, cy + 4, 28)
-        moon1.fillColor = c1
-        moon1.strokeColor = None
-        d.add(moon1)
-        moon2 = Circle(cx + 10, cy + 11, 22)
-        moon2.fillColor = HexColor('#EAF0E8')
-        moon2.strokeColor = None
-        d.add(moon2)
-        # Hvězdy
-        for sx, sy, sr in [(-35, 28, 4), (30, 36, 3.5), (-26, -8, 3),
-                            (36, 8, 3), (4, -28, 3.5)]:
-            star = Circle(cx + sx, cy + sy, sr)
-            star.fillColor = c1
-            star.strokeColor = None
-            d.add(star)
+        # ── Kapitola 3: Spánek pro přežití ──────────────────────────────────
+        # Záře měsíce na pozadí
+        _aura(cx - 5, cy + 5, [(56, 0.06), (44, 0.10), (34, 0.15)], AMBER_300)
+        # Měsíc srpek (dva překrývající se kruhy)
+        _circ(cx - 5, cy + 5, 30, AMBER_300)
+        _circ(cx + 10, cy + 12, 24, HexColor('#EAF0E8'))
+        # Dekorativní kroužek kolem měsíce
+        _ring(cx - 5, cy + 5, 36, Color(AMBER_300.red, AMBER_300.green, AMBER_300.blue, 0.3), 1.5)
+        # Mrak (spodní část – malé bubliny za měsícem)
+        for bx, by, br in [(-30, -22, 10), (-14, -28, 12), (4, -25, 9), (18, -20, 8)]:
+            _circ(cx + bx, cy + by, br,
+                  Color(1, 1, 1, alpha=0.8), HexColor('#CBD5E1'), 0.6)
+        # Hvězdy (kruhy různých velikostí)
+        for sx, sy, sr in [(-40, 30, 5), (32, 40, 4.5), (-28, -8, 3.5),
+                            (40, 10, 3.5), (5, -32, 4), (-14, 44, 3), (44, -15, 2.5)]:
+            _circ(cx + sx, cy + sy, sr, AMBER_300)
+        # ZZZ — tři tečkové skupiny jako naznačení textu
+        for i, (zx, zy, zr) in enumerate([(32, -22, 3.5), (38, -12, 2.8), (43, -3, 2.2)]):
+            _circ(cx + zx, cy + zy, zr,
+                  Color(WARM_400.red, WARM_400.green, WARM_400.blue, alpha=0.6 - i * 0.15))
+        # Tečky – hvězdný prach
+        for dx, dy in [(-44, -5), (-36, 18), (28, -28), (44, 32), (-10, -40)]:
+            _circ(cx + dx, cy + dy, 1.5,
+                  Color(AMBER_300.red, AMBER_300.green, AMBER_300.blue, 0.5))
 
     elif chapter_num == 4:
-        # Slunce + oblaky
-        sun = Circle(cx - 18, cy + 18, 20)
-        sun.fillColor = c3
-        sun.strokeColor = None
-        d.add(sun)
-        for bx, by, br in [(0, 0, 18), (-16, -7, 13), (16, -4, 15),
-                            (-7, -16, 11), (8, -14, 12)]:
-            cloud = Circle(cx + bx, cy + by, br)
-            cloud.fillColor = white
-            cloud.strokeColor = HexColor('#CBD5E1')
-            cloud.strokeWidth = 0.8
-            d.add(cloud)
-        heart3 = _heart_path(cx + 28, cy - 22, 7)
-        heart3.fillColor = c1
-        heart3.strokeColor = None
-        d.add(heart3)
+        # ── Kapitola 4: Baby blues / poporodní deprese ──────────────────────
+        # Slunce (záře na pozadí)
+        _aura(cx - 20, cy + 22, [(36, 0.10), (26, 0.16), (18, 0.24)], AMBER_300)
+        # Slunce (výplň)
+        _circ(cx - 20, cy + 22, 20, AMBER_300)
+        # Paprsky slunce (krátké linky)
+        for angle in range(0, 360, 45):
+            rad = math.radians(angle)
+            lx1 = cx - 20 + 22 * math.cos(rad)
+            ly1 = cy + 22 + 22 * math.sin(rad)
+            lx2 = cx - 20 + 32 * math.cos(rad)
+            ly2 = cy + 22 + 32 * math.sin(rad)
+            ln = Line(lx1, ly1, lx2, ly2)
+            ln.strokeColor = Color(AMBER_300.red, AMBER_300.green, AMBER_300.blue, 0.5)
+            ln.strokeWidth = 1.5
+            d.add(ln)
+        # Oblak (vrstvený)
+        for bx, by, br in [(6, 0, 20), (-14, -8, 15), (22, -6, 17),
+                            (-4, -18, 12), (14, -16, 13), (-24, -2, 10)]:
+            _circ(cx + bx, cy + by, br, white, HexColor('#CBD5E1'), 0.6)
+        # Kapky deště (malé elipsy)
+        for dx, dy in [(-18, -38), (-6, -46), (6, -40), (18, -48), (-12, -54), (2, -58)]:
+            _ellip(cx + dx - 2, cy + dy - 6, cx + dx + 2, cy + dy,
+                   HexColor('#93C5FD'), HexColor('#60A5FA'), 0.5)
+        # Duha (tři kroužky různých polomerů – oblouk)
+        for ri, rc in [(30, HexColor('#FCA5A5')), (24, HexColor('#FCD34D')),
+                       (18, HexColor('#86EFAC'))]:
+            rng = Circle(cx + 8, cy - 35, ri)
+            rng.fillColor = None
+            rng.strokeColor = Color(rc.red, rc.green, rc.blue, 0.5)
+            rng.strokeWidth = 3
+            d.add(rng)
+        # Srdce naděje
+        _heart(cx + 36, cy - 24, 8, c1)
+        _heart(cx - 40, cy - 20, 5, Color(c1.red, c1.green, c1.blue, 0.5))
 
     elif chapter_num == 5:
-        # Vanička + miminko
-        tub = Ellipse(cx - 38, cy - 22, cx + 38, cy + 12)
-        tub.fillColor = c1
-        tub.strokeColor = c2
-        tub.strokeWidth = 1.2
-        d.add(tub)
-        water = Ellipse(cx - 35, cy - 15, cx + 35, cy + 6)
-        water.fillColor = HexColor('#BAE6FD')
-        water.strokeColor = None
-        d.add(water)
-        head_b = Circle(cx, cy + 18, 14)
-        head_b.fillColor = CREAM_200
-        head_b.strokeColor = c2
-        head_b.strokeWidth = 1
-        d.add(head_b)
-        for bx, by, br in [(-26, 28, 4.5), (-36, 42, 3), (30, 32, 4), (38, 46, 5.5)]:
-            bub = Circle(cx + bx, cy + by, br)
-            bub.fillColor = white
-            bub.strokeColor = c2
-            bub.strokeWidth = 0.7
-            d.add(bub)
+        # ── Kapitola 5: Péče o novorozence ──────────────────────────────────
+        # Záře vany
+        _aura(cx, cy - 5, [(52, 0.06), (40, 0.10)], HexColor('#BAE6FD'))
+        # Vanička – rám
+        _ellip(cx - 40, cy - 28, cx + 40, cy + 14, c1, c2, 1.5)
+        # Voda
+        _ellip(cx - 36, cy - 20, cx + 36, cy + 8, HexColor('#BAE6FD'))
+        # Odlesk vody
+        _ellip(cx - 20, cy - 16, cx, cy - 10,
+               Color(1, 1, 1, 0.5))
+        # Miminko – tělo v vaničce
+        _ellip(cx - 14, cy - 10, cx + 14, cy + 12,
+               Color(CREAM_200.red, CREAM_200.green, CREAM_200.blue, 0.9), c2, 0.8)
+        # Hlavička
+        _circ(cx, cy + 20, 15, CREAM_200, c2, 1.0)
+        # Oči + úsměv (tečky)
+        _circ(cx - 5, cy + 22, 1.5, HexColor('#3D3530'))
+        _circ(cx + 5, cy + 22, 1.5, HexColor('#3D3530'))
+        _ellip(cx - 4, cy + 15, cx + 4, cy + 19, Color(0.42, 0.37, 0.19, 0.4))
+        # Tašené bublinky (větší + menší)
+        for bx, by, br in [(-30, 34, 5.5), (-40, 48, 3.5), (32, 36, 5), (40, 50, 6.5),
+                            (-18, 52, 3), (22, 58, 3.5), (8, 48, 2.5)]:
+            _circ(cx + bx, cy + by, br,
+                  Color(1, 1, 1, 0.8), HexColor('#7DD3FC'), 0.7)
+        # Kachnička (žlutý kroužek)
+        _circ(cx + 34, cy - 10, 8, HexColor('#FCD34D'))
+        _circ(cx + 34, cy - 4, 5, HexColor('#FCD34D'))
+        _circ(cx + 38, cy - 4, 3, HexColor('#F59E0B'))  # zobák
 
     elif chapter_num == 6:
-        # Miska
-        rim = Ellipse(cx - 38, cy + 3, cx + 38, cy + 15)
-        rim.fillColor = c1
-        rim.strokeColor = c2
-        rim.strokeWidth = 1
-        d.add(rim)
-        for fx, fy, fc in [(cx - 10, cy - 10, SAGE_400),
-                            (cx + 8, cy - 13, HexColor('#F47F7F')),
-                            (cx, cy - 3, c3)]:
-            food = Circle(fx, fy, 7)
-            food.fillColor = fc
-            food.strokeColor = None
-            d.add(food)
-        for lx, ly in [(-32, 32), (-22, 44), (-40, 44)]:
-            leaf = Ellipse(cx + lx - 6, cy + ly - 4, cx + lx + 6, cy + ly + 4)
-            leaf.fillColor = SAGE_400
-            leaf.strokeColor = None
-            d.add(leaf)
+        # ── Kapitola 6: Výživa a regenerace maminky ─────────────────────────
+        # Záře misky
+        _aura(cx, cy - 5, [(50, 0.06), (38, 0.10)], SAGE_200)
+        # Stojánek pod miskou (dekorativní podložka)
+        _ellip(cx - 38, cy - 40, cx + 38, cy - 32, c1, c2, 0.8)
+        # Miska (spodní půlkruh jako vrstvené elipsy)
+        _ellip(cx - 38, cy - 36, cx + 38, cy + 10, CREAM_100, c2, 1.2)
+        _ellip(cx - 34, cy - 30, cx + 34, cy + 8,
+               Color(CREAM_100.red, CREAM_100.green, CREAM_100.blue, 0.8))
+        # Okraj misky
+        _ellip(cx - 40, cy + 6, cx + 40, cy + 18, c1, c2, 1.0)
+        # Obsah misky – barevné potraviny (ovoce a zelenina)
+        _circ(cx - 12, cy - 12, 9, SAGE_400)   # brokolice/zelená
+        _circ(cx + 10, cy - 14, 8, HexColor('#F47F7F'))  # červené ovoce
+        _circ(cx + 1, cy - 3, 7, AMBER_300)  # žluté/oranžové
+        _circ(cx - 22, cy - 6, 6, HexColor('#86EFAC'))  # zelené
+        _circ(cx + 20, cy - 6, 6, HexColor('#FCA5A5'))  # růžové
+        # Lžíce (linie + ovál)
+        _ellip(cx + 30, cy + 22, cx + 42, cy + 34, WARM_400, WARM_600, 1.0)
+        ln2 = Line(cx + 36, cy + 22, cx + 28, cy - 16)
+        ln2.strokeColor = WARM_400
+        ln2.strokeWidth = 1.5
+        d.add(ln2)
+        # Vidlička (tři linky)
+        for fx in [-3, 0, 3]:
+            ln3 = Line(cx - 32 + fx, cy + 18, cx - 32 + fx, cy - 12)
+            ln3.strokeColor = WARM_400
+            ln3.strokeWidth = 1.2
+            d.add(ln3)
+        # Lístky (3 elipsy)
+        for lx, ly, angle in [(-38, 40, 0), (-28, 52, 0), (-46, 52, 0)]:
+            _ellip(cx + lx - 5, cy + ly - 4, cx + lx + 5, cy + ly + 4, SAGE_400)
+            _ellip(cx + lx - 2, cy + ly - 1, cx + lx + 2, cy + ly + 1, SAGE_500)
+        # Dekorativní tečky / vitamíny
+        for vx, vy in [(38, -25), (-44, -20), (40, 40)]:
+            _circ(cx + vx, cy + vy, 3, Color(AMBER_300.red, AMBER_300.green, AMBER_300.blue, 0.6))
 
     elif chapter_num == 7:
-        # Dvě srdce vedle sebe
-        h_left = _heart_path(cx - 16, cy + 5, 20)
-        h_left.fillColor = c1
-        h_left.strokeColor = c2
-        h_left.strokeWidth = 0.8
-        d.add(h_left)
-        h_right = _heart_path(cx + 16, cy + 5, 20)
-        h_right.fillColor = SAGE_200
-        h_right.strokeColor = SAGE_300
-        h_right.strokeWidth = 0.8
-        d.add(h_right)
-        h_small = _heart_path(cx, cy + 28, 8)
-        h_small.fillColor = c2
-        h_small.strokeColor = None
-        d.add(h_small)
-        for sx, sy in [(-38, 28), (38, 32), (0, -12)]:
-            star2 = Circle(cx + sx, cy + sy, 3)
-            star2.fillColor = c3
-            star2.strokeColor = None
-            d.add(star2)
+        # ── Kapitola 7: Vztah s partnerem ───────────────────────────────────
+        # Záře srdcí
+        _aura(cx - 16, cy + 5, [(36, 0.08), (26, 0.14)], BLUSH_200)
+        _aura(cx + 16, cy + 5, [(36, 0.08), (26, 0.14)], SAGE_200)
+        # Dvě velká srdce
+        _heart(cx - 16, cy + 5, 22, c1, c2, 1.0)
+        _heart(cx + 16, cy + 5, 22, SAGE_200, SAGE_300, 1.0)
+        # Překrývající se vrstva (srdce malé uprostřed – průnik)
+        _heart(cx, cy + 12, 10,
+               Color(BLUSH_300.red, BLUSH_300.green, BLUSH_300.blue, 0.4))
+        # Malé srdíčko miminka nahoře
+        _heart(cx, cy + 36, 9, BLUSH_500)
+        # Záře okolo miminkova srdíčka
+        _ring(cx, cy + 36, 14, Color(BLUSH_500.red, BLUSH_500.green, BLUSH_500.blue, 0.3), 1.5)
+        # Propojovací kroužky (tři prsteny)
+        for rx, ry, rr in [(-28, cy + 5, 8), (0, cy + 5, 8), (28, cy + 5, 8)]:
+            _ring(cx + rx - cx, ry, rr,
+                  Color(WARM_400.red, WARM_400.green, WARM_400.blue, 0.2), 1)
+        # Hvězdičky kolem
+        for sx, sy, sr in [(-44, 32, 3.5), (44, 36, 3.5), (0, -16, 3),
+                            (-36, -14, 2.5), (36, -8, 2.5), (-48, 8, 2), (48, 14, 2)]:
+            _circ(cx + sx, cy + sy, sr, c3)
+        # Dekorativní prsteny
+        _ring(cx - 38, cy + 5, 4, SAGE_300, 1.2)
+        _ring(cx + 38, cy + 5, 4, BLUSH_300, 1.2)
 
     elif chapter_num == 8:
-        # Domeček
-        # Zdi
-        walls = Rect(cx - 32, cy - 28, 64, 44)
-        walls.fillColor = CREAM_100
-        walls.strokeColor = c1
-        walls.strokeWidth = 1
-        d.add(walls)
-        # Střecha – simulace trojúhelníkem přes tři obdélníky
-        for i in range(8):
-            roof_r = Rect(cx - 34 + i * 5, cy + 16 + i * 2, 36 - i * 4, 4)
-            roof_r.fillColor = c1
-            roof_r.strokeColor = None
-            d.add(roof_r)
-        roof_top = Circle(cx, cy + 40, 14)
-        roof_top.fillColor = c1
-        roof_top.strokeColor = None
-        d.add(roof_top)
-        # Dveře
-        door = Rect(cx - 8, cy - 28, 16, 28)
-        door.fillColor = c2
-        door.strokeColor = c2
-        door.strokeWidth = 0.5
-        d.add(door)
-        # Okno
-        win = Rect(cx - 28, cy - 2, 14, 12)
-        win.fillColor = HexColor('#BAE6FD')
-        win.strokeColor = c1
-        win.strokeWidth = 0.5
-        d.add(win)
+        # ── Kapitola 8: Praktická organizace domácnosti ──────────────────────
+        # Pozadí – obloha
+        _ellip(cx - 50, cy + 10, cx + 50, cy + 60,
+               Color(HexColor('#BAE6FD').red, HexColor('#BAE6FD').green,
+                     HexColor('#BAE6FD').blue, 0.2))
+        # Tráva
+        _rect(cx - 48, cy - 40, 96, 8, SAGE_400)
+        # Zdi domu
+        _rect(cx - 34, cy - 36, 68, 48, CREAM_100, c1, 1.2)
+        # Střecha (tři vrstvené obdélníky → trojúhelník)
+        for i in range(10):
+            rw = 72 - i * 7
+            _rect(cx - rw / 2, cy + 12 + i * 3.5, rw, 4, c1)
+        # Střecha – špička
+        _circ(cx, cy + 48, 10, c1)
+        # Komín
+        _rect(cx + 18, cy + 44, 12, 22, c2, c2, 0.5)
+        # Kouř (tři kroužky)
+        for ki, (kx, ky, kr) in enumerate([(cx + 24, cy + 68, 5),
+                                             (cx + 27, cy + 76, 4),
+                                             (cx + 22, cy + 83, 3)]):
+            _circ(kx, ky, kr,
+                  Color(WARM_400.red, WARM_400.green, WARM_400.blue, 0.3 - ki * 0.08))
+        # Dveře (s půlkruhovým vrcholem)
+        _rect(cx - 10, cy - 36, 20, 34, c2, c2, 0.5)
+        _circ(cx, cy - 2, 10, c2, c2, 0.5)
+        # Klika
+        _circ(cx + 5, cy - 18, 2.5, AMBER_300)
+        # Okno vlevo (2 × 2 tabulky)
+        _rect(cx - 30, cy, 16, 14, HexColor('#BAE6FD'), c1, 0.8)
+        _line(cx - 22, cy, cx - 22, cy + 14, c1, 0.6)
+        _line(cx - 30, cy + 7, cx - 14, cy + 7, c1, 0.6)
+        # Okno vpravo
+        _rect(cx + 14, cy, 16, 14, HexColor('#BAE6FD'), c1, 0.8)
+        _line(cx + 22, cy, cx + 22, cy + 14, c1, 0.6)
+        _line(cx + 14, cy + 7, cx + 30, cy + 7, c1, 0.6)
+        # Kytka před domem
+        _circ(cx - 38, cy - 30, 5, HexColor('#F9ADAD'))
+        _circ(cx - 38, cy - 30, 2, AMBER_300)
+        ln_kytka = Line(cx - 38, cy - 35, cx - 38, cy - 40)
+        ln_kytka.strokeColor = SAGE_400
+        ln_kytka.strokeWidth = 1.5
+        d.add(ln_kytka)
 
     elif chapter_num == 9:
-        # Dveře
-        frame = Rect(cx - 26, cy - 42, 52, 74)
-        frame.fillColor = c1
-        frame.strokeColor = c2
-        frame.strokeWidth = 1.5
-        d.add(frame)
-        left_door = Rect(cx - 22, cy - 38, 22, 67)
-        left_door.fillColor = CREAM_100
-        left_door.strokeColor = c2
-        left_door.strokeWidth = 1
-        d.add(left_door)
-        right_door = Rect(cx, cy - 38, 22, 67)
-        right_door.fillColor = CREAM_100
-        right_door.strokeColor = c2
-        right_door.strokeWidth = 1
-        d.add(right_door)
-        # Věnec
-        wreath = Circle(cx, cy + 20, 10)
-        wreath.fillColor = None
-        wreath.strokeColor = SAGE_400
-        wreath.strokeWidth = 1.5
-        d.add(wreath)
-        for a in range(0, 360, 45):
-            lx2 = cx + 10 * math.cos(math.radians(a))
-            ly2 = cy + 20 + 10 * math.sin(math.radians(a))
-            leaf2 = Circle(lx2, ly2, 3)
-            leaf2.fillColor = SAGE_400
-            leaf2.strokeColor = None
-            d.add(leaf2)
-        h_bow = _heart_path(cx, cy + 9, 4)
-        h_bow.fillColor = c2
-        h_bow.strokeColor = None
-        d.add(h_bow)
+        # ── Kapitola 9: Nástup rodiny a návštěvy ────────────────────────────
+        # Pozadí (záře za dveřmi)
+        _aura(cx, cy + 5, [(50, 0.06), (36, 0.10)], c1)
+        # Dveřní rám (vnější)
+        _rect(cx - 30, cy - 48, 60, 84, c1, c2, 1.8)
+        # Levé křídlo dveří
+        _rect(cx - 26, cy - 44, 24, 75, CREAM_100, c2, 1.0)
+        # Pravé křídlo dveří
+        _rect(cx + 2, cy - 44, 24, 75, CREAM_100, c2, 1.0)
+        # Dekorativní panely na dveřích
+        _rect(cx - 23, cy - 40, 18, 30, Color(c1.red, c1.green, c1.blue, 0.2), c2, 0.5)
+        _rect(cx + 5, cy - 40, 18, 30, Color(c1.red, c1.green, c1.blue, 0.2), c2, 0.5)
+        _rect(cx - 23, cy - 2, 18, 20, Color(c1.red, c1.green, c1.blue, 0.2), c2, 0.5)
+        _rect(cx + 5, cy - 2, 18, 20, Color(c1.red, c1.green, c1.blue, 0.2), c2, 0.5)
+        # Kliky
+        _circ(cx - 5, cy - 5, 3, AMBER_300)
+        _circ(cx + 5, cy - 5, 3, AMBER_300)
+        # Věnec (kroužek + lístky)
+        _ring(cx, cy + 26, 12, SAGE_500, 2.0)
+        for a in range(0, 360, 40):
+            lx2 = cx + 12 * math.cos(math.radians(a))
+            ly2 = cy + 26 + 12 * math.sin(math.radians(a))
+            _circ(lx2, ly2, 4, SAGE_400)
+        # Mašle věnce
+        _heart(cx, cy + 13, 5, BLUSH_500)
+        # Schodek
+        _rect(cx - 34, cy - 52, 68, 6, Color(c1.red, c1.green, c1.blue, 0.6), c2, 0.8)
+        # Stop badge (červený kroužek s vnitřním kroužkem – symbol NE)
+        _circ(cx + 36, cy + 38, 13, BLUSH_500)
+        _ring(cx + 36, cy + 38, 9, white, 3.0)
+        # Hvězdičky nahoře (pohostinnost)
+        for sx, sy in [(-38, 44), (38, -44), (-34, -44)]:
+            _circ(cx + sx, cy + sy, 2.5, c3)
 
     elif chapter_num == 10:
-        # Květ ze semínka
-        stem = Line(cx, cy - 32, cx, cy + 28)
-        stem.strokeColor = SAGE_500
-        stem.strokeWidth = 2.5
-        d.add(stem)
-        # Okvětní lístky
-        for angle in range(0, 360, 72):
+        # ── Kapitola 10: Tělo zpátky – realisticky ──────────────────────────
+        # Záře kolem květu
+        _aura(cx, cy + 30, [(40, 0.06), (30, 0.11), (20, 0.18)], BLUSH_200)
+        # Semínko
+        p_seed = Path()
+        p_seed.moveTo(cx, cy - 44)
+        p_seed.curveTo(cx - 7, cy - 38, cx - 7, cy - 28, cx, cy - 26)
+        p_seed.curveTo(cx + 7, cy - 28, cx + 7, cy - 38, cx, cy - 44)
+        p_seed.closePath()
+        p_seed.fillColor = WARM_600
+        p_seed.strokeColor = None
+        d.add(p_seed)
+        # Stonek (přes tři linky – tučnější efekt)
+        for dx in [-0.8, 0, 0.8]:
+            ln_s = Line(cx + dx, cy - 36, cx + dx, cy + 30)
+            ln_s.strokeColor = SAGE_500
+            ln_s.strokeWidth = 1.5
+            d.add(ln_s)
+        # Lístky (2 elipsy na stonku)
+        _ellip(cx - 20, cy + 4, cx, cy + 16, SAGE_400)
+        _ellip(cx, cy - 6, cx + 20, cy + 6, SAGE_300)
+        _ellip(cx - 14, cy - 18, cx + 2, cy - 8, SAGE_200)
+        # Okvětní lístky (7 kolem středu)
+        for angle in range(0, 360, 51):
             rad = math.radians(angle)
-            px2 = cx + 14 * math.cos(rad)
-            py2 = cy + 28 + 14 * math.sin(rad)
-            petal = Ellipse(px2 - 7, py2 - 4, px2 + 7, py2 + 4)
-            petal.fillColor = c1
-            petal.strokeColor = c2
-            petal.strokeWidth = 0.5
-            d.add(petal)
-        # Střed
-        center = Circle(cx, cy + 28, 9)
-        center.fillColor = AMBER_300
-        center.strokeColor = HexColor('#F59E0B')
-        center.strokeWidth = 0.8
-        d.add(center)
-        # Lístky na stonku
-        leaf_l = Ellipse(cx - 18, cy + 4, cx, cy + 14)
-        leaf_l.fillColor = SAGE_400
-        leaf_l.strokeColor = None
-        d.add(leaf_l)
-        leaf_r = Ellipse(cx, cy - 6, cx + 18, cy + 4)
-        leaf_r.fillColor = SAGE_300
-        leaf_r.strokeColor = None
-        d.add(leaf_r)
+            px2 = cx + 16 * math.cos(rad)
+            py2 = cy + 30 + 16 * math.sin(rad)
+            _ellip(px2 - 8, py2 - 5, px2 + 8, py2 + 5, c1, c2, 0.6)
+        # Vnější prsteny okvětí
+        for angle in range(26, 386, 51):
+            rad = math.radians(angle)
+            px2 = cx + 22 * math.cos(rad)
+            py2 = cy + 30 + 22 * math.sin(rad)
+            _ellip(px2 - 5, py2 - 3, px2 + 5, py2 + 3,
+                   Color(c2.red, c2.green, c2.blue, 0.4))
+        # Střed květu (tři vrstvy)
+        _circ(cx, cy + 30, 12, AMBER_300, HexColor('#F59E0B'), 0.8)
+        _circ(cx, cy + 30, 8, HexColor('#FCD34D'))
+        _circ(cx, cy + 30, 4, HexColor('#F59E0B'))
+        # Paprsky kolem středu
+        for angle in range(0, 360, 45):
+            rad = math.radians(angle)
+            _line(cx + 13 * math.cos(rad), cy + 30 + 13 * math.sin(rad),
+                  cx + 22 * math.cos(rad), cy + 30 + 22 * math.sin(rad),
+                  Color(AMBER_300.red, AMBER_300.green, AMBER_300.blue, 0.4), 1.0)
+        # Motýl (dvě elipsy)
+        _ellip(cx + 30, cy + 15, cx + 44, cy + 28, HexColor('#F9ADAD'),
+               HexColor('#F47F7F'), 0.8)
+        _ellip(cx + 30, cy + 25, cx + 44, cy + 36, HexColor('#FCCFCF'),
+               HexColor('#F47F7F'), 0.8)
+        _circ(cx + 37, cy + 25, 1.5, HexColor('#3D3530'))
 
     elif chapter_num == 11:
-        # Lékařský kříž
-        cross_v = Rect(cx - 9, cy - 28, 18, 56)
-        cross_v.fillColor = c1
-        cross_v.strokeColor = c2
-        cross_v.strokeWidth = 1
-        d.add(cross_v)
-        cross_h = Rect(cx - 28, cy - 9, 56, 18)
-        cross_h.fillColor = c1
-        cross_h.strokeColor = c2
-        cross_h.strokeWidth = 1
-        d.add(cross_h)
-        inner = Rect(cx - 6, cy - 6, 12, 12)
-        inner.fillColor = white
-        inner.strokeColor = None
-        d.add(inner)
-        # Telefon
-        phone = Rect(cx + 28, cy - 24, 16, 28)
-        phone.fillColor = c2
-        phone.strokeColor = c2
-        phone.strokeWidth = 0.8
-        phone.rx = 3
-        phone.ry = 3
-        d.add(phone)
-        screen = Rect(cx + 31, cy - 16, 10, 14)
-        screen.fillColor = HexColor('#BAE6FD')
-        screen.strokeColor = None
-        d.add(screen)
+        # ── Kapitola 11: Kdy volat lékaře ───────────────────────────────────
+        # Záře kříže
+        _aura(cx - 8, cy, [(48, 0.06), (36, 0.10), (24, 0.16)], SAGE_300)
+        # Lékařský kříž (3 vrstvy – stín + hlavní + zvýraznění)
+        _rect(cx - 12, cy - 30, 24, 60, Color(SAGE_300.red, SAGE_300.green, SAGE_300.blue, 0.4))
+        _rect(cx - 30, cy - 12, 60, 24, Color(SAGE_300.red, SAGE_300.green, SAGE_300.blue, 0.4))
+        _rect(cx - 10, cy - 28, 20, 56, c1, c2, 1.0)
+        _rect(cx - 28, cy - 10, 56, 20, c1, c2, 1.0)
+        _rect(cx - 7, cy - 7, 14, 14, white)
+        # Kroužky (záře) kolem kříže
+        _ring(cx - 8, cy, 36, Color(SAGE_300.red, SAGE_300.green, SAGE_300.blue, 0.25), 1.5)
+        _ring(cx - 8, cy, 44, Color(SAGE_300.red, SAGE_300.green, SAGE_300.blue, 0.15), 1.0)
+        # Telefon (zaoblený obdélník)
+        _rect(cx + 30, cy - 26, 18, 32, c2, c2, 0.8, 3)
+        # Displej
+        _rect(cx + 33, cy - 18, 12, 18, HexColor('#BAE6FD'))
+        # Tlačítko domů
+        _circ(cx + 39, cy - 4, 2.5, white)
+        # Puls / EKG linka
+        ekg = Path()
+        ekg.moveTo(cx - 44, cy - 44)
+        ekg.lineTo(cx - 34, cy - 44)
+        ekg.lineTo(cx - 28, cy - 56)
+        ekg.lineTo(cx - 22, cy - 32)
+        ekg.lineTo(cx - 16, cy - 50)
+        ekg.lineTo(cx - 10, cy - 44)
+        ekg.lineTo(cx + 2, cy - 44)
+        ekg.strokeColor = BLUSH_500
+        ekg.strokeWidth = 1.8
+        ekg.fillColor = None
+        d.add(ekg)
+        # Srdce (puls)
+        _heart(cx + 28, cy + 24, 7, BLUSH_500)
+        # Hvězdičky (urgence)
+        for sx, sy in [(-44, 30), (-44, -20), (44, -24)]:
+            _circ(cx + sx, cy + sy, 2.5, c3)
 
 
 def _heart_path(cx: float, cy: float, size: float) -> Path:

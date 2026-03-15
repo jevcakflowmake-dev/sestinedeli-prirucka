@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
 Generátor PDF příručky "Šestinedělí s klidem"
-Verze 3: TTF fonty (česká diakritika) + profesionální ilustrace
+Verze 4: Fotky z fotobanky + pastelové pozadí stránek
 """
 import math
+import os
+import urllib.request
+import urllib.error
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.pagesizes import A4
@@ -11,7 +14,7 @@ from reportlab.lib.units import cm
 from reportlab.lib.colors import HexColor, white, black, Color
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, PageBreak,
-    Table, TableStyle, HRFlowable,
+    Table, TableStyle, HRFlowable, Image as RLImage,
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
@@ -48,6 +51,65 @@ pdfmetrics.registerFont(TTFont('Georgia', f'{_FONT_DIR}/Georgia.ttf'))
 pdfmetrics.registerFont(TTFont('GeorgiaItalic', f'{_FONT_DIR}/Georgia Italic.ttf'))
 
 PAGE_W, PAGE_H = A4
+
+# ── FOTKY (stahování + cache) ──────────────────────────────────────────────────
+_IMG_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'img_cache')
+
+# Unsplash foto ID pro každou kapitolu (kurátor výběr, komerčně volná licence)
+_CHAPTER_PHOTO_IDS = {
+    1:  'photo-1559757175-0eb30cd8c063',  # žena odpočívá po porodu
+    2:  'photo-1555252333-9f8e92e65df9',  # maminka s novorozencem
+    3:  'photo-1531983412531-1f49a365ffed', # spící miminko
+    4:  'photo-1474552226712-ac0f0961a954', # žena v emocích / únava
+    5:  'photo-1471922694854-ff1b63b20054', # koupání / péče o novorozence
+    6:  'photo-1490645935967-10de6ba17061', # zdravé jídlo v misce
+    7:  'photo-1503454537195-1dcabb73ffb9', # maminka s miminkem / rodina
+    8:  'photo-1556909114-f6e7ad7d3136',   # útulný organizovaný domov
+    9:  'photo-1529156069898-49953e39b3ac', # rodinné setkání
+    10: 'photo-1544367567-0f2fcb009e0b',   # žena jóga / wellness
+    11: 'photo-1584820927498-cfe5211fd8bf', # lékař s miminkem
+}
+
+def _get_chapter_photo(chapter_num: int):
+    """Vrátí cestu k fotce pro kapitolu. Stáhne z Unsplash pokud není v cache."""
+    os.makedirs(_IMG_CACHE, exist_ok=True)
+    cache_path = os.path.join(_IMG_CACHE, f'ch_{chapter_num:02d}.jpg')
+    if os.path.exists(cache_path) and os.path.getsize(cache_path) > 8_000:
+        return cache_path
+    photo_id = _CHAPTER_PHOTO_IDS.get(chapter_num)
+    if not photo_id:
+        return None
+    url = f'https://images.unsplash.com/{photo_id}?w=900&h=380&fit=crop&q=80&auto=format'
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = resp.read()
+        if len(data) < 8_000:
+            return None
+        with open(cache_path, 'wb') as f:
+            f.write(data)
+        print(f'  ✓ Fotka kap. {chapter_num} stažena ({len(data)//1024} kB)')
+        return cache_path
+    except Exception as exc:
+        print(f'  ✗ Fotka kap. {chapter_num}: {exc}')
+        return None
+
+# ── PASTELOVÉ POZADÍ STRÁNEK ───────────────────────────────────────────────────
+# Jemné pastelové barvy pro každou kapitolu (střídají se 3 tóny)
+_CHAPTER_PAGE_BG = {
+    0:  HexColor('#FDFAF6'),  # úvod / obsah (teplá krémová)
+    1:  HexColor('#FEF6F6'),  # ultra-light blush
+    2:  HexColor('#F4FAF3'),  # ultra-light sage
+    3:  HexColor('#FFFDF0'),  # ultra-light amber/cream
+    4:  HexColor('#FEF6F6'),  # ultra-light blush
+    5:  HexColor('#F4FAF3'),  # ultra-light sage
+    6:  HexColor('#FFFDF0'),  # ultra-light cream
+    7:  HexColor('#FEF6F6'),  # ultra-light blush
+    8:  HexColor('#F4FAF3'),  # ultra-light sage
+    9:  HexColor('#FFFDF0'),  # ultra-light cream
+    10: HexColor('#FEF6F6'),  # ultra-light blush
+    11: HexColor('#F4FAF3'),  # ultra-light sage
+}
 
 # ── ILUSTRACE (vektorové kresby pro každou kapitolu) ──────────────────────────
 
@@ -969,9 +1031,21 @@ def build_pdf(output_path: str):
         c.restoreState()
 
     def make_later_page(chapter_num=0, chapter_title=""):
+        bg_color = _CHAPTER_PAGE_BG.get(chapter_num, HexColor('#FDFAF6'))
         def later_page(c, doc):
             c.saveState()
             w, h = A4
+            # ── Pastelové pozadí celé stránky ──
+            c.setFillColor(bg_color)
+            c.rect(0, 0, w, h, fill=1, stroke=0)
+            # ── Jemný dekorativní pruh nahoře ──
+            c.setFillColor(HexColor('#F9ADAD') if chapter_num % 3 == 1
+                           else HexColor('#A8C4A2') if chapter_num % 3 == 2
+                           else HexColor('#FAEABB'))
+            c.setFillAlpha(0.18)
+            c.rect(0, h - 0.35 * cm, w, 0.35 * cm, fill=1, stroke=0)
+            c.setFillAlpha(1)
+            # ── Zápatí ──
             c.setStrokeColor(BLUSH_200)
             c.setLineWidth(0.5)
             c.line(2 * cm, 1.9 * cm, w - 2 * cm, 1.9 * cm)
@@ -1060,6 +1134,25 @@ def build_pdf(output_path: str):
         # Nakreslit ilustraci přímo do Drawing pomocí shapes
         _add_illustration_to_drawing(illus_drawing, ch['num'], illus_w, illus_h)
         story.append(illus_drawing)
+
+        # ── FOTKA Z FOTOBANKY ──
+        photo_path = _get_chapter_photo(ch['num'])
+        if photo_path:
+            photo_w = 14.5 * cm
+            photo_h = 5.2 * cm
+            # Foto s jemným zaoblením přes Table (rámeček)
+            photo_img = RLImage(photo_path, width=photo_w, height=photo_h)
+            photo_table = Table([[photo_img]], colWidths=[photo_w])
+            photo_table.setStyle(TableStyle([
+                ('TOPPADDING', (0, 0), (-1, -1), 0),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+                ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                ('BOX', (0, 0), (-1, -1), 0.8, HexColor('#D4C5BF')),
+            ]))
+            story.append(Spacer(1, 0.25 * cm))
+            story.append(photo_table)
+            story.append(Spacer(1, 0.15 * cm))
 
         story.append(HRFlowable(width="100%", thickness=1, color=BLUSH_200,
                                 spaceBefore=6, spaceAfter=10))
